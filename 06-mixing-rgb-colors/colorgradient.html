@@ -1,0 +1,136 @@
+<html>
+<head>
+	<style>
+		body {
+			margin: 0px;
+			padding: 0px;
+		}
+	</style>
+</head>
+
+<body id="thebody">
+	<canvas id="myCanvas" width="578" height="200"></canvas>
+	<script type="text/javascript">
+
+		var samples = 100;
+		var canvas = document.getElementById('myCanvas');
+		var context = canvas.getContext('2d');
+
+		var r = 0; var g = 0; var b = 0;
+
+		var index = 0;
+		var index_increment_direction = 1;
+
+		// see http://colrd.com/palette/22198/?download=css
+		colors = [ "#f80c12",
+			"#ee1100",
+			"#ff3311",
+			"#ff4422",
+			"#ff6644",
+			"#ff9933",
+			"#feae2d",
+			"#ccbb33",
+			"#d0c310",
+			"#aacc22",
+			"#69d025",
+			"#22ccaa",
+			"#12bdb9",
+			"#11aabb",
+			"#4444dd",
+			"#3311bb",
+			"#3b0cbd",
+			"#442299"
+		]
+
+		gradient(0);
+
+		function hexToRgb(hex) {
+		    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+		    return result ? {
+		        r: parseInt(result[1], 16),
+		        g: parseInt(result[2], 16),
+		        b: parseInt(result[3], 16)
+		    } : null;
+		}
+
+
+		function gradient(idx) {
+			color_increments = new Array(3);
+
+			color_start = hexToRgb(colors[idx]);
+			color_end = hexToRgb(colors[idx + index_increment_direction]);
+
+			color_increments[0] = (color_end.r - color_start.r) / samples;
+			color_increments[1] = (color_end.g - color_start.g) / samples;
+			color_increments[2] = (color_end.b - color_start.b) / samples;
+
+			count = 0;
+			
+			r = color_start.r;
+			g = color_start.g;
+			b = color_start.b;
+			theLoop();
+		}
+
+		function padDigits(input) {
+			if(input.length == 1) {
+				return "0" + input;
+			} else {
+				return input;
+			}
+		}
+
+		function sanitize(number) {
+			num = Math.floor(number)
+			if(num < 0) {
+				return 0;
+			} else if(num > 255) {
+				return 255;
+			} else {
+				return num;
+			}
+		}
+
+		function theLoop() {
+			setTimeout(function() {
+				context.beginPath();
+				context.moveTo(100, 150);
+				context.lineTo(450, 150);
+				context.lineWidth = 100;
+
+			// set line color
+			r += color_increments[0];
+			g += color_increments[1];
+			b += color_increments[2];
+
+			rstring = padDigits(sanitize(r).toString(16));
+			gstring = padDigits(sanitize(g).toString(16));
+			bstring = padDigits(sanitize(b).toString(16));
+			colorstring = "#" + rstring + gstring + bstring;
+			console.log("[" + r + ", " + g + ", " + b + "], rgb: " + colorstring)
+			context.strokeStyle = colorstring;
+			context.stroke();
+			count++;
+
+			if(count < samples) {
+				theLoop();
+			} else if(count == samples) {
+				index += index_increment_direction;
+				if(index == colors.length - 1 && index_increment_direction == 1) {
+					index_increment_direction = -1;
+					index--;
+				}
+				if(index == 0 && index_increment_direction == -1) {
+					index_increment_direction = 1;
+					index = 0;
+				}
+				gradient(index);
+			}
+		}, 5);
+		}
+
+
+	</script>
+</body>
+
+</html> 
